@@ -1,0 +1,105 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Netflix South Africa</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <nav>
+            <img src="images/logo.png" class="logo" alt="Netflix Logo">
+            <div>
+                <button><a class="signupBUtton"  href="index.html">Home</a></button>
+                <button><a class="signupBUtton"  href="signin.html">Sign Out</a></button>
+            </div>
+        </nav>
+        <div class="header-content">
+            <h1>Edit Profile</h1>
+            <div class="profile-container">
+                <div class="profile-image">
+                    <img id="profile-pic" src="https://via.placeholder.com/150" alt="Profile Picture">
+                    <input type="file" id="upload" accept="image/*" hidden>
+                    <label for="upload">Upload New Picture</label>
+                </div>
+                <form class="email-signup">
+                    <input type="text" placeholder="Full Name" required>
+                    <input type="email" placeholder="Email address" required>
+                    <input type="password" placeholder="New Password (leave blank to keep current)" minlength="6">
+                    <button type="submit">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <h2>Questions? Call 076-1056-735</h2>
+        <div class="row">
+            <div class="col">
+                <a href="#">FAQ</a>
+                <a href="#">Investor Relations</a>
+                <a href="#">Privacy</a>
+                <a href="#">Speed Test</a>
+            </div>
+            <div class="col">
+                <a href="#">Account</a>
+                <a href="#">Ways to Watch</a>
+                <a href="#">Corporate Information</a>
+                <a href="#">Only on Netflix</a>
+            </div>
+            <div class="col">
+                <a href="#">Media Centre</a>
+                <a href="#">Terms of Use</a>
+                <a href="#">Contact Us</a>
+            </div>
+        </div>
+        <select>
+            <option value="en">English</option>
+            <option value="other">Other Language</option>
+        </select>
+        <p class="copyright-txt">Netflix South Africa ©</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
